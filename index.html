@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+
+<head></head>
+
+<body>
+  <script src="js/three.js"></script>
+  <script src="js/life.js"></script>
+  <script src="js/life3d.js"></script>
+  <script>
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    const geometry = new THREE.BoxGeometry();
+    const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+    const cube = new THREE.Mesh(geometry, material);
+    scene.add(cube);
+
+    camera.position.z = 5;
+    camera.position.y = 150;
+    camera.lookAt(cube.position);
+
+    const ambient = new THREE.AmbientLight(0x404040, 1); // soft white light
+    scene.add(ambient);
+
+
+    const directionalLight = new THREE.PointLight(0xffffff, 5);
+    directionalLight.position.z = 6
+    directionalLight.castsShadow = true
+    scene.add(directionalLight);
+
+    const life = new LifeLogic();
+
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      const cellGroup = new THREE.Group();
+      cellGroup.name = "all-cells";
+      const cells = life.getPoints();
+      const cellMesh = Object.keys(cells)
+        .map(key => cells[key])
+        .map(point => {
+          const cell = lifeCell()
+          cell.position.x = point.x;
+          cell.position.z = point.y;
+          return cell
+        });
+
+      cellGroup.add(...cellMesh)
+
+      scene.getObjectByName("all-cells")?.removeFromParent();
+      scene.add(cellGroup);
+
+      renderer.render(scene, camera);
+
+      life.advance();
+    };
+
+    animate();
+  </script>
+</body>
+
+</html>
